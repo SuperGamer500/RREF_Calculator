@@ -136,17 +136,29 @@ void EchelonForm(float equations[][99], int rowNumber, int collumnAmount)
     }
 
     printf("Consistent system\n");
+}
 
+void DefaltEquationTable(float equations[][99], int rowAmount, int collumnAmount)
+{
+    for (int i = 0; i < rowAmount; i++)
+    {
+        for (int j = 0; j < collumnAmount; j++)
+        {
+            equations[i][j] = 0;
+        }
+    }
+}
+
+void PrintWeights(float equations[][99], int rowNumber, int collumnAmount, int *basicVariables, int *freeVariables)
+{
     int cVar = 0;
-    int basicVariables = 0;
-    int freeVariables = 0;
     int checkRow = 0;
     while (cVar < collumnAmount - 1)
     {
         if (checkRow > rowNumber - 1)
         {
             printf("var %d is a free variable\n", cVar + 1);
-            freeVariables++;
+            (*freeVariables)++;
             cVar++;
             continue;
         }
@@ -168,30 +180,104 @@ void EchelonForm(float equations[][99], int rowNumber, int collumnAmount)
             }
             printf("\n");
             checkRow++;
-            basicVariables++;
+            (*basicVariables)++;
         }
 
         if (found != 0)
         {
             printf("var %d = free variable\n", cVar + 1);
-            freeVariables++;
+            (*freeVariables)++;
         }
         cVar++;
         printf("\n");
     }
-    printf("In total there are %d basic variables and %d free variables", basicVariables, freeVariables);
+    printf("In total there are %d basic variables and %d free variables", *basicVariables, *freeVariables);
     printf("--------------------\n");
 }
 
-void DefaltEquationTable(float equations[][99], int rowAmount, int collumnAmount)
+void CalcResult(float equations[][99], int rowNumber, int collumnAmount, float *WeightsArray)
 {
-    for (int i = 0; i < rowAmount; i++)
+    int cVar = 0;
+    int checkRow = 0;
+    while (cVar < collumnAmount - 1)
     {
-        for (int j = 0; j < collumnAmount; j++)
+        if (checkRow > rowNumber - 1)
         {
-            equations[i][j] = 0;
+            printf("var %d is a free variable\n", cVar + 1);
+            printf("Please define test 1 var %d\n", cVar + 1);
+            scanf("%f", &WeightsArray[cVar]);
+
+            cVar++;
+            continue;
+        }
+        int found = 1;
+
+        if (equations[checkRow][cVar] > 0.001f)
+        {
+            found = 0;
+            checkRow++;
+        }
+
+        if (found != 0)
+        {
+            printf("var %d = free variable\n", cVar + 1);
+            printf("Please define test 2 var %d\n", cVar + 1);
+            scanf("%f", &WeightsArray[cVar]);
+        }
+        cVar++;
+        printf("\n");
+    }
+    printf("--------------------\n");
+
+    cVar = 0;
+    checkRow = 0;
+    while (cVar < collumnAmount - 1)
+    {
+        if (checkRow > rowNumber - 1)
+        {
+            cVar++;
+            continue;
+        }
+        int found = 1;
+
+        if (equations[checkRow][cVar] > 0.001f)
+        {
+            found = 0;
+            if (fabsf(equations[checkRow][collumnAmount - 1]) > 0.001f)
+            {
+                WeightsArray[cVar] += equations[checkRow][collumnAmount - 1];
+                printf("added %f | %f \n", equations[checkRow][collumnAmount - 1], WeightsArray[cVar]);
+            }
+
+            else
+            {
+                WeightsArray[cVar] = 0;
+                printf("added %d\n", 0);
+            }
+
+            for (int g = cVar + 1; g < collumnAmount - 1; g++)
+            {
+
+                printf("added %f\n", -WeightsArray[g] * equations[checkRow][g]);
+                WeightsArray[cVar] += -WeightsArray[g] * equations[checkRow][g];
+            }
+            printf("--------\n");
+            checkRow++;
+        }
+        cVar++;
+        printf("\n");
+    }
+
+    printf("(");
+    for (int i = 0; i < collumnAmount - 1; i++)
+    {
+        printf("%f", WeightsArray[i]);
+        if (i != collumnAmount - 2)
+        {
+            printf(", ");
         }
     }
+    printf(")\n");
 }
 
 void ChangeRow(float equations[][99], int row, int collumnAmount)
@@ -209,9 +295,10 @@ void ChangeRow(float equations[][99], int row, int collumnAmount)
 
 int main()
 {
-
     int amountOfRows = 0;
     int amountOfCollumns = 0;
+    int basicVaribles;
+    int freeVariables;
 
     while (1 == 1)
     {
@@ -272,6 +359,30 @@ int main()
     }
 
     EchelonForm(equations, amountOfRows, amountOfCollumns);
+    PrintWeights(equations, amountOfRows, amountOfCollumns, &basicVaribles, &freeVariables);
+    float *WeightsArray = malloc(sizeof(float) * amountOfCollumns);
+    if (freeVariables > 0)
+    {
+        int input = -1;
+        do
+        {
+            scanf("%d", &input);
+            printf("Do you want to calculate a specific solution set?\n1.Yes\n2.No\n");
+            if (input == 1)
+            {
+                CalcResult(equations, amountOfRows, amountOfCollumns, WeightsArray);
+            }
+            else if (input == 2)
+            {
+                break;
+            }
+            else
+            {
+                printf("Please pick valid option\n");
+            }
+
+        } while (1 == 1);
+    }
 
     return 0;
 }
