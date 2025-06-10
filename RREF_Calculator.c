@@ -1,7 +1,13 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-
+int IsNumber(float num1, float num2)
+{
+    if (fabsf(num2 - num1) < 0.0001)
+        return 0;
+    else
+        return 1;
+}
 void PrintSystem(float equations[][99], int rowNumber, int collumnNumber)
 {
     for (int i = 0; i < rowNumber; i++)
@@ -9,7 +15,7 @@ void PrintSystem(float equations[][99], int rowNumber, int collumnNumber)
         printf("equation [%d] [", i + 1);
         for (int j = 0; j < collumnNumber; j++)
         {
-            if (fabsf(equations[i][j]) < 0.00001f)
+            if (IsNumber(equations[i][j], 0) == 0)
             {
                 printf("0");
             }
@@ -69,9 +75,10 @@ void PickCollumn(float equations[][99], int collumn, int requiredRow, int *succe
     *success = 1;
     for (int i = requiredRow; i < rowNumber; i++)
     {
-        if (equations[i][collumn] != 0)
+        if (IsNumber(equations[i][collumn], 0) == 1)
         {
             ReduceSystem(equations[i], collumn, collumnAmount);
+
             Transverse(equations[i], equations[requiredRow], collumnAmount);
             *success = 0;
             break;
@@ -98,29 +105,27 @@ void EchelonForm(float equations[][99], int rowNumber, int collumnAmount, int *s
 
         for (int j = 0; j < rowNumber; j++)
         {
-            if (j != currentRow && equations[j][i] != 0)
+            if (j != currentRow && IsNumber(equations[j][i], 0) == 1)
             {
                 float multiplier = -equations[j][i];
-
                 for (int k = 0; k < collumnAmount; k++)
                 {
                     equations[j][k] += equations[currentRow][k] * multiplier;
                 }
             }
         }
-
         currentRow++;
         continue;
     }
 
     for (int i = 0; i < rowNumber; i++)
     {
-        if (fabsf(equations[i][collumnAmount - 1]) > 0.0001f)
+        if (IsNumber(equations[i][collumnAmount - 1], 0) == 1)
         {
             int nonZero = 1;
             for (int j = 0; j < collumnAmount - 1; j++)
             {
-                if (fabsf(equations[i][j]) > 0.0001f)
+                if (IsNumber(equations[i][j], 0) == 1)
                 {
                     nonZero = 0;
                 }
@@ -170,7 +175,7 @@ void PrintWeights(float equations[][99], int rowNumber, int collumnAmount, int *
         if (equations[checkRow][cVar] > 0.001f)
         {
             found = 0;
-            if (fabsf(equations[checkRow][collumnAmount - 1]) > 0.001f)
+            if (IsNumber(equations[checkRow][collumnAmount - 1], 0) == 1)
                 printf("var %d = %.3f", cVar + 1, equations[checkRow][collumnAmount - 1]);
 
             else
@@ -178,7 +183,7 @@ void PrintWeights(float equations[][99], int rowNumber, int collumnAmount, int *
 
             for (int g = cVar + 1; g < collumnAmount - 1; g++)
             {
-                if (fabs(equations[checkRow][g]) > 0.001f)
+                if (IsNumber(equations[checkRow][g], 0) == 1)
                     printf(" + (%f)var %d", -equations[checkRow][g], g + 1);
             }
             printf("\n");
@@ -198,7 +203,7 @@ void PrintWeights(float equations[][99], int rowNumber, int collumnAmount, int *
     printf("--------------------\n");
 }
 
-void CalcResult(float equations[][99], int rowNumber, int collumnAmount, float *WeightsArray)
+void CalcResult(float equations[][99], int rowNumber, int collumnAmount, float *WeightsArray, int printValues)
 {
     int cVar = 0;
     int checkRow = 0;
@@ -243,10 +248,10 @@ void CalcResult(float equations[][99], int rowNumber, int collumnAmount, float *
         }
         int found = 1;
 
-        if (equations[checkRow][cVar] > 0.001f)
+        if (IsNumber(equations[checkRow][cVar], 0) == 1)
         {
             found = 0;
-            if (fabsf(equations[checkRow][collumnAmount - 1]) > 0.001f)
+            if (IsNumber(equations[checkRow][collumnAmount - 1], 0) == 1)
                 WeightsArray[cVar] += equations[checkRow][collumnAmount - 1];
 
             else
@@ -260,16 +265,19 @@ void CalcResult(float equations[][99], int rowNumber, int collumnAmount, float *
         cVar++;
     }
 
-    printf("(");
-    for (int i = 0; i < collumnAmount - 1; i++)
+    if (printValues == 0)
     {
-        printf("%f", WeightsArray[i]);
-        if (i != collumnAmount - 2)
+        printf("(");
+        for (int i = 0; i < collumnAmount - 1; i++)
         {
-            printf(", ");
+            printf("%f", WeightsArray[i]);
+            if (i != collumnAmount - 2)
+            {
+                printf(", ");
+            }
         }
+        printf(")\n");
     }
-    printf(")\n");
 }
 
 void ChangeRow(float equations[][99], int row, int collumnAmount)
@@ -364,7 +372,7 @@ int main()
             scanf("%d", &input);
             if (input == 1)
             {
-                CalcResult(equations, amountOfRows, amountOfCollumns, WeightsArray);
+                CalcResult(equations, amountOfRows, amountOfCollumns, WeightsArray, 0);
             }
             else if (input == 2)
             {
@@ -376,6 +384,10 @@ int main()
             }
 
         } while (1 == 1);
+    }
+    else if (basicVaribles > 0 && freeVariables == 0)
+    {
+        CalcResult(equations, amountOfRows, amountOfCollumns, WeightsArray, 1);
     }
     free(WeightsArray);
     return 0;
