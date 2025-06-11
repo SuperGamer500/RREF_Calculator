@@ -211,8 +211,7 @@ void CalcResult(float equations[][99], int rowNumber, int collumnAmount, float *
     {
         if (checkRow > rowNumber - 1)
         {
-            printf("var %d is a free variable\n", cVar + 1);
-            printf("Please define test 1 var %d\n", cVar + 1);
+            printf("Please define var %d\n", cVar + 1);
             scanf("%f", &WeightsArray[cVar]);
             printf("--------------------\n");
             cVar++;
@@ -228,8 +227,7 @@ void CalcResult(float equations[][99], int rowNumber, int collumnAmount, float *
 
         if (found != 0)
         {
-            printf("var %d = free variable\n", cVar + 1);
-            printf("Please define test 2 var %d\n", cVar + 1);
+            printf("Please define var %d\n", cVar + 1);
             scanf("%f", &WeightsArray[cVar]);
             printf("--------------------\n");
         }
@@ -368,7 +366,7 @@ int main()
         int input = -1;
         do
         {
-            printf("Do you want to calculate a specific solution set?\n1.Yes\n2.No\n");
+            printf("Do you want to calculate a specific solution?\n1.Yes\n2.No\n");
             scanf("%d", &input);
             if (input == 1)
             {
